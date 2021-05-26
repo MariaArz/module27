@@ -1,7 +1,7 @@
 #include <iostream>
 #include <ctime>
 #include <iomanip>
-#include<map>
+#include<vector>
 
 int main() {
     std::string name="";
@@ -9,36 +9,40 @@ int main() {
     std::tm birthday=*std::localtime(&t);
     std::time_t n=std::time(nullptr);
     std::tm now=*std::localtime(&n);
-    std::map<std::string, std::tm> people;
-    people.insert(std::pair<std::string, std::tm>(name,now));
+    std::vector<std::tm> birthdays;
+    std::vector<std::string> people;
     std::cout<<"Input your friends with their birthday"<<std::endl;
-    while (name!="end"){
+    while (true){
+
         std::cin>>name;
         if (name=="end"){
             break;
         }
+        else{
+
             std::cin>>std::get_time(&birthday,"%y/%m/%d");
             if ((birthday.tm_mon>now.tm_mon)
                 ||(birthday.tm_mon==now.tm_mon && birthday.tm_mday>=now.tm_mday)){
-                while (!people.empty()
-                    && ((birthday.tm_mon!=people.begin()->second.tm_mon
-                        && birthday.tm_mday != people.begin()->second.tm_mday))){
-                    if (people.begin()->first==""
-                        || (birthday.tm_mon<people.begin()->second.tm_mon
-                            ||(birthday.tm_mon==people.begin()->second.tm_mon
-                               && birthday.tm_mday < people.begin()->second.tm_mday))){
-                        people.erase(people.begin());
+                people.push_back(name);
+                birthdays.push_back(birthday);
+                for (int i=0; i< birthdays.size(); i++){
+                    if ((birthday.tm_mon<birthdays[i].tm_mon
+                         ||(birthday.tm_mon==birthdays[i].tm_mon
+                            && birthday.tm_mday < birthdays[i].tm_mday))){
+                        people.erase(people.begin()+i);
+                        birthdays.erase(birthdays.begin()+i);
+                        i--;
                     }
                 }
-                people.insert(std::pair<std::string, std::tm>(name,birthday));
-            }
 
+            }
+        }
     }
 
-    for (std::map<std::string, std::tm>::iterator it=people.begin(); it!=people.end(); it++){
+    for (int i=0; i<birthdays.size(); i++){
 
-        std::cout<<it->first<<" "<<std::put_time(&it->second, "%m/%d")<<std::endl;
-        if (it->second.tm_mon==now.tm_mon && it->second.tm_mday==now.tm_mday){
+        std::cout<<people[i]<<" "<<std::put_time(&birthdays[i], "%m/%d")<<std::endl;
+        if (birthdays[i].tm_mon==now.tm_mon && birthdays[i].tm_mday==now.tm_mday){
             std::cout<<"Birthday is today!"<<std::endl;
         }
     }

@@ -1,102 +1,61 @@
 #include <iostream>
 #include <ctime>
 #include <iomanip>
-#include<map>
+#include<vector>
 
-enum {
-    ON,
-    OFF,
-    DO_SMTH,
-    DO_SMTH_OTHER
+struct tasks_possible{
+    std::vector<std::string> task;
+    std::vector<std::time_t> time;
 };
-void check(int& process,std::map<std::string,std::time_t>& tasks){
-    std::string task_current="";
-
-    if (process & ON){
-        process&= ~ON;
-        task_current="on";
-    }
-    else if (process & OFF){
-        process&= ~OFF;
-        task_current="off";
-    }
-    else if (process & DO_SMTH){
-        process&= ~DO_SMTH;
-        task_current="do_smth";
-    }
-    else if (process & DO_SMTH_OTHER){
-        process&= ~DO_SMTH_OTHER;
-        task_current="do_smth_other";
-    }
+void check(tasks_possible& tasks, std::time_t& begin){
     std::time_t end=std::time(nullptr);
-    if (task_current!=""){
-        std::cout<<task_current<<" end in "<<std::put_time(std::localtime(&end),"%H:%M:%S")<<std::endl;
-        tasks[task_current]=(std::time_t)std::difftime(end,tasks[task_current]);
+    if (!tasks.time.empty() && tasks.time[tasks.time.size()-1]==begin){
+        tasks.time.pop_back();
+        tasks.time.push_back(std::difftime(end,begin));
+        std::cout<<tasks.task[tasks.time.size()-1]<<" end in "<<std::put_time(std::localtime(&end),"%H:%M:%S")<<std::endl;
     }
 }
-void start(std::string task, int& process,  std::map<std::string,std::time_t>& tasks){
-    if (task=="on"){
-        process|=ON;
-    }
-    else if (task=="off"){
-        process|=OFF;
-    }
-    else if (task=="do_smth"){
-        process|=DO_SMTH;
-    }
-    else if (task=="do_smth_other"){
-        process|=DO_SMTH_OTHER;
-    }
-    std::time_t begin=std::time(nullptr);
-    std::cout<<task<<" begin in "<<std::put_time(std::localtime(&begin),"%H:%M:%S")<<std::endl;
-    tasks.insert(std::pair<std::string,std::time_t>(task,begin));
+void start(tasks_possible& tasks,std::time_t& begin){
+    begin=std::time(nullptr);
+    tasks.time.push_back(begin);
+    std::cout<<tasks.task[tasks.task.size()-1]<<" begin in "<<std::put_time(std::localtime(&begin),"%H:%M:%S")<<std::endl;
 }
 
-void current(int& process,std::map<std::string,std::time_t>& tasks){
-    std::string task_current="";
-
-    if (process & ON){
-        task_current="on";
-    }
-    else if (process & OFF){
-        task_current="off";
-    }
-    else if (process & DO_SMTH){
-        task_current="do_smth";
-    }
-    else if (process & DO_SMTH_OTHER){
-        task_current="do_smth_other";
-    }
-    for (std::map<std::string,std::time_t>::iterator it=tasks.begin();
-        it!=tasks.end(); it++){
-        if (it->first!=task_current){
-            std::cout<<it->first<<" "<<std::put_time( std::localtime(&it->second),"%H:%M:%S")<<std::endl;
-
+void current(tasks_possible& tasks, std::time_t& begin){
+    if (!tasks.time.empty()) {
+        for (int i = 0; i < tasks.task.size(); i++) {
+            if (tasks.time[i] != begin) {
+                std::cout << tasks.task[i] << " " << std::put_time(std::localtime(&tasks.time[i]), "%H:%M:%S")
+                          << std::endl;
+            }
+            else{
+                std::cout << "current now "<<tasks.task[i] << " " << std::put_time(std::localtime(&tasks.time[i]), "%H:%M:%S")
+                          << std::endl;
+            }
         }
-
-    }
-    if (task_current!="") {
-        std::cout << "Doing "<< task_current << std::endl;
     }
 }
+
+
 int main() {
-    int process=0;
-    std::string  command, task;
-    std::map<std::string,std::time_t> tasks;
+    tasks_possible tasks;
+    std::time_t begin=std::time(nullptr);;
+    std::string  command,task;
     for (;;){
         std::cout<<"Input command"<<std::endl;
         std::cin>>command;
         if (command=="begin"){
             std::cout<<"Input task"<<std::endl;
             std::cin>>task;
-            check(process,tasks);
-            start(task,process,tasks);
+            tasks.task.push_back(task);
+            check(tasks,begin);
+            start(tasks,begin);
         }
         else if (command=="end"){
-            check(process,tasks);
+            check(tasks,begin);
         }
         else if (command=="status"){
-            current(process,tasks);
+            current(tasks,begin);
         }
         else if (command== "exit"){
             break;
