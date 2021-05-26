@@ -25,11 +25,11 @@ void current(tasks_possible& tasks, std::time_t& begin){
     if (!tasks.time.empty()) {
         for (int i = 0; i < tasks.task.size(); i++) {
             if (tasks.time[i] != begin) {
-                std::cout << tasks.task[i] << " " << std::put_time(std::localtime(&tasks.time[i]), "%H:%M:%S")
+                std::cout << tasks.task[i] << " " << std::put_time(std::gmtime(&tasks.time[i]), "%H:%M:%S")
                           << std::endl;
             }
             else{
-                std::cout << "current now "<<tasks.task[i] << " " << std::put_time(std::localtime(&tasks.time[i]), "%H:%M:%S")
+                std::cout << "current now "<<tasks.task[i] << " " << std::put_time(std::gmtime(&tasks.time[i]), "%H:%M:%S")
                           << std::endl;
             }
         }
