@@ -4,32 +4,36 @@
 #include<vector>
 
 struct tasks_possible{
-    std::vector<std::string> task;
-    std::vector<std::time_t> time;
+    std::string task="unknown";
+    std::time_t time;
 };
-void check(tasks_possible& tasks, std::time_t& begin){
+void check(std::vector<tasks_possible>& tasks, tasks_possible& T, std::time_t& begin){
     std::time_t end=std::time(nullptr);
-    if (!tasks.time.empty() && tasks.time[tasks.time.size()-1]==begin){
-        tasks.time.pop_back();
-        tasks.time.push_back(std::difftime(end,begin));
-        std::cout<<tasks.task[tasks.time.size()-1]<<" end in "<<std::put_time(std::localtime(&end),"%H:%M:%S")<<std::endl;
+    if (!tasks.empty() && tasks[tasks.size()-1].time==begin){
+        T.task=tasks[tasks.size()-1].task;
+        T.time=std::difftime(end,begin);
+        tasks.pop_back();
+        tasks.push_back(T);
+        std::cout<<tasks[tasks.size()-1].task<<" end in "<<std::put_time(std::localtime(&end),"%H:%M:%S")<<std::endl;
     }
 }
-void start(tasks_possible& tasks,std::time_t& begin){
-    begin=std::time(nullptr);
-    tasks.time.push_back(begin);
-    std::cout<<tasks.task[tasks.task.size()-1]<<" begin in "<<std::put_time(std::localtime(&begin),"%H:%M:%S")<<std::endl;
+void start(std::vector<tasks_possible>& tasks,tasks_possible& T,std::time_t& begin, std::string task){
+    T.task=task;
+    T.time=std::time(nullptr);
+    begin=T.time;
+    tasks.push_back(T);
+    std::cout<<tasks[tasks.size()-1].task<<" begin in "<<std::put_time(std::localtime(&begin),"%H:%M:%S")<<std::endl;
 }
 
-void current(tasks_possible& tasks, std::time_t& begin){
-    if (!tasks.time.empty()) {
-        for (int i = 0; i < tasks.task.size(); i++) {
-            if (tasks.time[i] != begin) {
-                std::cout << tasks.task[i] << " " << std::put_time(std::gmtime(&tasks.time[i]), "%H:%M:%S")
+void current(std::vector<tasks_possible>& tasks, std::time_t& begin){
+    if (!tasks.empty()) {
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks[i].time != begin) {
+                std::cout << tasks[i].task << " " << std::put_time(std::gmtime(&tasks[i].time), "%H:%M:%S")
                           << std::endl;
             }
             else{
-                std::cout << "current now "<<tasks.task[i] << " " << std::put_time(std::gmtime(&tasks.time[i]), "%H:%M:%S")
+                std::cout << "current now "<<tasks[i].task << " " << std::put_time(std::localtime(&begin), "%H:%M:%S")
                           << std::endl;
             }
         }
@@ -38,8 +42,9 @@ void current(tasks_possible& tasks, std::time_t& begin){
 
 
 int main() {
-    tasks_possible tasks;
-    std::time_t begin=std::time(nullptr);;
+    tasks_possible T;
+    std::vector<tasks_possible> tasks;
+    std::time_t begin=std::time(nullptr);
     std::string  command,task;
     for (;;){
         std::cout<<"Input command"<<std::endl;
@@ -47,12 +52,12 @@ int main() {
         if (command=="begin"){
             std::cout<<"Input task"<<std::endl;
             std::cin>>task;
-            tasks.task.push_back(task);
-            check(tasks,begin);
-            start(tasks,begin);
+
+            check(tasks,T,begin);
+            start(tasks,T,begin,task);
         }
         else if (command=="end"){
-            check(tasks,begin);
+            check(tasks,T, begin);
         }
         else if (command=="status"){
             current(tasks,begin);
